@@ -2,10 +2,10 @@
 FROM eclipse-temurin:19-jre-jammy
 
 # Environment variables
-ENV SERVER_PROVIDER="purpur" \
+ENV SERVER_PROVIDER="paper" \
     LAZYMC_VERSION="latest" \
     MC_VERSION="latest" \
-    SERVER_BUILD="latest" \
+    # SERVER_BUILD="latest" \
     MC_RAM="" \
     JAVA_OPTS=""
 

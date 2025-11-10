@@ -12,7 +12,7 @@ This allows the server to not waste resources if nobody is connected.
 This image provides a basic Minecraft server using one of the supported providers. All customizations are left to the user.
 
 # Supported server providers:
-### [Vanilla](https://www.minecraft.net/) | [Paper](https://papermc.io/) | [Purpur](https://purpurmc.org/) | [Fabric](https://fabricmc.net/) | [Forge](https://forums.minecraftforge.net/)
+### [Paper](https://papermc.io/)
 Want more? Let me know in the [discussions](https://github.com/Okazakee/mcserver-lazymc-docker/discussions).
 
 # Usage
@@ -87,7 +87,7 @@ This image has seven environment variables:
 - Server Provider
   - **Name:** `SERVER_PROVIDER`
   - Set this to the server [Provider](#supported-server-providers) you want to use.
-  - Default value: `purpur`.
+  - Default value: `paper`.
   - `-e SERVER_PROVIDER="<paper>"`
 - Lazymc Version
   - **Name:** `LAZYMC_VERSION`
@@ -102,12 +102,12 @@ This image has seven environment variables:
   - Default value: `latest`.
   - Changing this on an existing server will change the version *without wiping the server*.
   - `-e MC_VERSION="<latest>"`
-- Server Build
+<!-- - Server Build
   - **Name:** `SERVER_BUILD`
   - Set this to the number of the [Provider](#supported-server-providers) build that the server should use (**not the Minecraft version**).
   - Default value: `latest`.
   - Changing this on an existing server will change the version *without wiping the server*.
-  - `-e SERVER_BUILD="<latest>"`
+  - `-e SERVER_BUILD="<latest>"` -->
 - RAM
   - **Name:** `MC_RAM`
   - Set this to the amount of RAM the server can use.

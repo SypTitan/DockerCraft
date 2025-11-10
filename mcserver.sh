@@ -35,7 +35,7 @@ echo "" | tee -a server_cfg.txt
 echo "Minecraft Version= \033[0;33m$MC_VERSION\033[0m" | tee -a server_cfg.txt
 echo "Lazymc version= \033[0;33m$LAZYMC_VERSION\033[0m" | tee -a server_cfg.txt
 echo "Server provider= \033[0;33m$SERVER_PROVIDER\033[0m" | tee -a server_cfg.txt
-echo "Server build= \033[0;33m$SERVER_BUILD\033[0m" | tee -a server_cfg.txt
+# echo "Server build= \033[0;33m$SERVER_BUILD\033[0m" | tee -a server_cfg.txt
 echo "Dedicated RAM= \033[0;33m${MC_RAM:-"Not specified."}\033[0m" | tee -a server_cfg.txt
 echo "Java options= \033[0;33m${JAVA_OPTS:-"Not specified."}\033[0m" | tee -a server_cfg.txt
 echo ""
@@ -78,13 +78,7 @@ allowed_modded_type="fabric forge"
 allowed_servers_type="paper purpur"
 
 # Determine server type
-if [ "$SERVER_PROVIDER" = "vanilla" ]
-then
-    SERVER_TYPE="vanilla"
-elif [ -z "$SERVER_PROVIDER" ] || echo "$allowed_modded_type" | grep -wq "$SERVER_PROVIDER"
-then
-    SERVER_TYPE="modded"
-elif [ -z "$SERVER_PROVIDER" ] || echo "$allowed_servers_type" | grep -wq "$SERVER_PROVIDER"
+if [ "$SERVER_PROVIDER" = "paper" ]
 then
     SERVER_TYPE="servers"
 else
@@ -92,6 +86,7 @@ else
     exit 1
 fi
 
+:'
 # FETCH LATEST VER API - thx to centrojars.com
 API_FETCH_LATEST="https://centrojars.com/api/fetchLatest/${SERVER_TYPE}/${SERVER_PROVIDER}/"
 # FETCH VER DETAILS API - thx to centrojars.com
@@ -115,10 +110,34 @@ then
     exit 1
   fi
 fi
+'
+
+# Get latest version
+if [ ${MC_VERSION} = latest ]
+then
+  echo "\033[0;33mGetting latest Minecraft version... \033[0m"
+  echo ""
+  if ! MC_VERSION=$(wget -qO - https://fill.papermc.io/v3/projects/paper | jq -r '.versions | to_entries[0] | .value[0]')
+  then
+    echo "\033[0;31mError: Could not get latest version of Minecraft. Exiting... \033[0m" | tee server_cfg.txt
+    exit 1
+  fi
+else
+  if wget -O - https://fill.papermc.io/v3/projects/paper/versions/1.21.11/builds | jq -e '.ok == false' > /dev/null 2>&1; then
+    echo "\033[0;31mError: Minecraft version $MC_VERSION version does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
+    exit 1
+  fi
+fi
+
 
 # FETCH JAR API - thx to centrojars.com
-API_FETCH_JAR="https://centrojars.com/api/fetchJar/${SERVER_TYPE}/${SERVER_PROVIDER}/${MC_VERSION}.jar"
+PAPERMC_URL=$(wget -qO - https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds | jq -r 'first(.[] | select(.channel == "STABLE") | .downloads."server:default".url) // "null"')
+if [ ${PAPERMC_URL} == 'null'] then
+  echo "\033[0;31mError: Minecraft version $MC_VERSION version does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
+  exit 1
+fi
 
+:'
 # Set the BUILD_FETCH_API value based on SERVER_PROVIDER
 case $SERVER_PROVIDER in
     "paper") BUILD_FETCH_API="https://papermc.io/api/v2/projects/paper/versions/${MC_VERSION}/builds/${SERVER_BUILD}";;
@@ -144,7 +163,7 @@ else
     exit 1
   fi
 fi
-
+'
 # Set the jar file name
 JAR_NAME=${SERVER_PROVIDER}-${MC_VERSION}-${SERVER_BUILD}.jar
 
@@ -166,6 +185,7 @@ then
   exit 1
 fi
 
+:'
 # install forge if necessary
 if [ "$SERVER_PROVIDER" = "forge" ]
 then
@@ -185,6 +205,7 @@ then
     echo ""
   fi
 fi
+'
 
 # Determine run command
 if [ -z "$RUN_COMMAND" ]; then
