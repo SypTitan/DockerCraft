@@ -106,7 +106,7 @@ fi
 
 # FETCH JAR API - thx to centrojars.com
 PAPERMC_URL=$(wget -qO - https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds | jq -r 'first(.[] | select(.channel == "STABLE") | .downloads."server:default".url) // "null"')
-if [ ${PAPERMC_URL} = 'null'] then
+if [ "${PAPERMC_URL}" = "null" ]; then
   echo "\033[0;31mError: There is no build available for Minecraft version $MC_VERSION. Exiting... \033[0m" | tee server_cfg.txt
   exit 1
 fi
