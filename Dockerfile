@@ -1,5 +1,5 @@
 # JRE base
-FROM eclipse-temurin:19-jre-jammy
+FROM eclipse-temurin:21-jre-noble
 
 # Environment variables
 ENV SERVER_PROVIDER="paper" \
