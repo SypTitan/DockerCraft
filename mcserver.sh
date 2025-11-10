@@ -123,7 +123,7 @@ then
     exit 1
   fi
 else
-  if wget -O - https://fill.papermc.io/v3/projects/paper/versions/1.21.11/builds | jq -e '.ok == false' > /dev/null 2>&1; then
+  if wget -O - https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds | jq -e '.ok == false' > /dev/null 2>&1; then
     echo "\033[0;31mError: Minecraft version $MC_VERSION does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
     exit 1
   fi
