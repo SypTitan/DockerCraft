@@ -124,7 +124,7 @@ then
   fi
 else
   if wget -O - https://fill.papermc.io/v3/projects/paper/versions/1.21.11/builds | jq -e '.ok == false' > /dev/null 2>&1; then
-    echo "\033[0;31mError: Minecraft version $MC_VERSION version does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
+    echo "\033[0;31mError: Minecraft version $MC_VERSION does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
     exit 1
   fi
 fi
@@ -133,7 +133,7 @@ fi
 # FETCH JAR API - thx to centrojars.com
 PAPERMC_URL=$(wget -qO - https://fill.papermc.io/v3/projects/paper/versions/${MC_VERSION}/builds | jq -r 'first(.[] | select(.channel == "STABLE") | .downloads."server:default".url) // "null"')
 if [ ${PAPERMC_URL} == 'null'] then
-  echo "\033[0;31mError: Minecraft version $MC_VERSION version does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
+  echo "\033[0;31mError: There is no build available for Minecraft version $MC_VERSION. Exiting... \033[0m" | tee server_cfg.txt
   exit 1
 fi
 
