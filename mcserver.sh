@@ -110,6 +110,7 @@ if [ "${PAPERMC_URL}" = "null" ]; then
   echo "\033[0;31mError: There is no build available for Minecraft version $MC_VERSION. Exiting... \033[0m" | tee server_cfg.txt
   exit 1
 fi
+API_FETCH_JAR=${PAPERMC_URL}
 
 # Set the jar file name
 JAR_NAME=${SERVER_PROVIDER}-${MC_VERSION}-${SERVER_BUILD}.jar
