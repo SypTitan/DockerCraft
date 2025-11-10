@@ -86,32 +86,6 @@ else
     exit 1
 fi
 
-:'
-# FETCH LATEST VER API - thx to centrojars.com
-API_FETCH_LATEST="https://centrojars.com/api/fetchLatest/${SERVER_TYPE}/${SERVER_PROVIDER}/"
-# FETCH VER DETAILS API - thx to centrojars.com
-API_FETCH_DETAILS="https://centrojars.com/api/fetchAll/${SERVER_TYPE}/${SERVER_PROVIDER}/${MC_VERSION}"
-
-# Get the latest MC version
-if [ ${MC_VERSION} = latest ]
-then
-  echo "\033[0;33mGetting latest Minecraft version... \033[0m"
-  echo ""
-  if ! MC_VERSION=$(wget -qO - $API_FETCH_LATEST | jq -r '.response.version')
-  then
-    echo "\033[0;31mError: Could not get latest version of Minecraft. Exiting... \033[0m" | tee server_cfg.txt
-    exit 1
-  fi
-  else
-  # Check if the version exists
-  if ! [ ${MC_VERSION} = "$(wget -qO - $API_FETCH_DETAILS | jq -r '.response[0].version')" ]
-  then
-    echo "\033[0;31mError: Minecraft version $MC_VERSION version does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
-    exit 1
-  fi
-fi
-'
-
 # Get latest version
 if [ ${MC_VERSION} = latest ]
 then
@@ -137,33 +111,6 @@ if [ ${PAPERMC_URL} == 'null'] then
   exit 1
 fi
 
-:'
-# Set the BUILD_FETCH_API value based on SERVER_PROVIDER
-case $SERVER_PROVIDER in
-    "paper") BUILD_FETCH_API="https://papermc.io/api/v2/projects/paper/versions/${MC_VERSION}/builds/${SERVER_BUILD}";;
-    "purpur") BUILD_FETCH_API="https://api.purpurmc.org/v2/purpur/${MC_VERSION}/${SERVER_BUILD}";;
-    *) echo "\033[0;33mSkipping build check because $SERVER_PROVIDER does not support custom builds number \033[0m"
-       echo "";;
-esac
-
-#Server build handler
-if [ ${SERVER_BUILD} = latest ]
-then
-  # Get the latest build - GIMMICK CHECK CODE SINCE MAJOR SCRIPT UPDATE
-  echo "\033[0;33mGetting latest build for ${SERVER_PROVIDER}... \033[0m"
-  echo ""
-else
-  # Check if the build exists
-  echo "\033[0;33mChecking existance of $SERVER_BUILD build for ${SERVER_PROVIDER} \033[0m"
-  echo ""
-  status_code=$(curl -s -o /dev/null -w '%{http_code}' ${BUILD_FETCH_API})
-  if [ "$status_code" -ne 200 ]
-  then
-    echo "\033[0;31mError: ${SERVER_PROVIDER} $SERVER_BUILD build does not exist or is not available. Exiting... \033[0m" | tee server_cfg.txt
-    exit 1
-  fi
-fi
-'
 # Set the jar file name
 JAR_NAME=${SERVER_PROVIDER}-${MC_VERSION}-${SERVER_BUILD}.jar
 
@@ -185,57 +132,10 @@ then
   exit 1
 fi
 
-:'
-# install forge if necessary
-if [ "$SERVER_PROVIDER" = "forge" ]
-then
-  # .installed file is used to check if forge is already installed by a previous run of the container
-  if [ ! -e .installed ]
-  then
-    echo "\033[0;33mInstalling Forge... This will take a while...\033[0m"
-    echo ""
-    if ! java -jar $JAR_NAME --installServer > /dev/null 2>&1
-    then
-      echo "\033[0;31mError: Could not install Forge. Exiting... \033[0m" | tee server_cfg.txt
-      exit 1
-    fi
-    touch .installed
-  else
-    echo "\033[0;33mForge already installed. Skipping installation... \033[0m"
-    echo ""
-  fi
-fi
-'
 
 # Determine run command
 if [ -z "$RUN_COMMAND" ]; then
-  if [ "$SERVER_PROVIDER" = "forge" ]; then
-    # Parse the Minecraft version. If it is 1.17.0 or higher, we need to use the new Forge run command.
-    mcmajor=$(echo $MC_VERSION | cut -d'.' -f1)
-    mcminor=$(echo $MC_VERSION | cut -d'.' -f2)
-    mcpatch=$(echo $MC_VERSION | cut -d'.' -f3)
-    if [ $mcmajor -ge 1 ] && [ $mcminor -ge 17 ] && [ $mcpatch -ge 0 ]; then
-      # Grep the java line from the run.sh file
-      echo "\033[0;33mGetting new forge run command from run.sh... \033[0m"
-      echo ""
-      rcmd=$(grep -m 1 "java" ./run.sh)
-      # Strip the "$@" from the end of the line and add nogui to the end
-      rcmd=$(echo $rcmd | sed 's/--onlyCheckJava || exit 1//')
-      printf '\033[0;33mNew forge run command: %s \033[0m' "$rcmd"
-      echo ""
-      # If user has set MC_RAM then we will use it by appending it to the user_jvm_args.txt file
-      if [ ! -z "${MC_RAM}" ]; then
-        echo "\033[0;33mSetting user RAM Limit args... \033[0m"
-        echo ""
-        echo "-Xms512M -Xmx${MC_RAM}" >> ./user_jvm_args.txt
-      fi
-      RUN_COMMAND=$rcmd
-    else
-      RUN_COMMAND="java ${JAVA_OPTS} -jar $JAR_NAME nogui"
-    fi
-  else
-    RUN_COMMAND="java ${JAVA_OPTS} -jar $JAR_NAME nogui"
-  fi
+  RUN_COMMAND="java ${JAVA_OPTS} -jar $JAR_NAME nogui"
 else
   echo "\033[0;33mUsing custom run command... \033[0m"
 fi
